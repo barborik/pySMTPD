@@ -1,16 +1,22 @@
+import os
 import socket
+
+__MAIL_CONF = "conf/mail.conf"
+__USER_CONF = "conf/user.conf"
+
+
+LISTEN_ADDR = "127.0.0.1"
+LISTEN_PORT = "25"
 
 MAX_CLIENTS = "10"
 CLIENT_TIMEOUT = "100"
 HOSTNAME = socket.gethostname()
 USER_LIST = dict()
 
-LISTEN_ADDR = "127.0.0.1"
-LISTEN_PORT = "25"
-
 
 def load():
-    conf = open("mail.conf", "r")
+    parse_users()
+    conf = open(__MAIL_CONF, "r")
 
     for line in conf:
         if line.strip() == str():
@@ -21,17 +27,13 @@ def load():
         key = pair[0].strip()
         val = pair[1].strip()
 
-        if key == "USERS_FILE":
-            parse_users(val)
-            continue
-
         exec(f"global {key}\n{key} = \"{val}\"")
 
     conf.close()
 
 
-def parse_users(filename):
-    users = open(filename, "r")
+def parse_users():
+    users = open(__USER_CONF, "r")
 
     for line in users:
         split = line.split(":")
@@ -39,4 +41,9 @@ def parse_users(filename):
         name = split[0].strip()
         mbox = split[1].strip()
 
+        if not os.path.exists(mbox):
+            os.makedirs(mbox)
+
         USER_LIST[name] = mbox
+
+    users.close()

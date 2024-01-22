@@ -1,24 +1,52 @@
+from hashlib import sha256
+
+import log
 import config
 from relay import relay_queue
-from relay import relay
 
 
 class Envelope:
     def process(self):
-        for mailbox in self.forward_path:
-            # parse user
-            user = mailbox.split("@")[0]
+        relay = False
 
-            # verify user exists on the local instance
-            if user in config.USER_LIST:
-                self.store(user)
+        for mailbox in self.forward_path.copy():
+            split = mailbox.split("@")
+            user = split[0]
+
+            # parse hostname
+            if len(split) > 1:
+                hostname = split[1]
+            else:
+                hostname = config.HOSTNAME
+
+            # parse port
+            split = hostname.split(":")
+            if len(split) > 1:
+                hostname = split[0]
+                port = split[1]
+            else:
+                port = 25
+
+            # verify if mail is meant for the local machine
+            if hostname == config.HOSTNAME and port == config.LISTEN_PORT:
+                if user in config.USER_LIST:
+                    log.inbound_received(user)
+                    self.store(user)
+                    self.forward_path.remove(mailbox)
+                else:
+                    # send delivery status
+                    pass
             # if not, relay the mail
             else:
-                relay_queue.append(self)
-                relay()
+                relay = True
+
+        if relay:
+            log.outbound_received(mailbox)
+            relay_queue.append(self)
 
     def store(self, user):
-        file = open(config.USER_LIST[user] + "mail.txt", "w")
+        filename = sha256(self.data.encode("ascii")).hexdigest()
+        file = open(config.USER_LIST[user] + filename, "w")
         file.write(self.data)
         file.close()
 
