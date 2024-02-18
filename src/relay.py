@@ -1,5 +1,5 @@
 import socket
-import dns.resolver  # dnspython
+import dns.resolver  # requires the dnspython package
 from collections import deque
 
 import log
@@ -30,23 +30,15 @@ def relay():
 
         envelope = relay_queue.popleft()
         address = envelope.forward_path[0].split("@")[1]
-
-        split = address.split(":")
-        if len(split) > 1:
-            address = split[0]
-            port = int(split[1])
+            
+        if "[" in address:
+            mx = address.replace("[", "").replace("]", "")
         else:
-            port = 25
+            mx = lookup_mx()
 
-        try:  # validate an ip address
-            socket.inet_aton(address)
-            mx = address
-        except socket.error:
-            mx = lookup_mx(address)
+        log.sending(f"{mx}:{config.RELAY_PORT}")
 
-        log.sending(f"{mx}:{port}")
-
-        relay_socket.connect((mx, port))
+        relay_socket.connect((mx, config.RELAY_PORT))
         if not check_reply(relay_socket.recv(512).decode("ascii")):
             relay_socket.close()
             continue

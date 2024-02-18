@@ -1,9 +1,7 @@
 import os
 import socket
 
-__MAIL_CONF = "conf/mail.conf"
-__USER_CONF = "conf/user.conf"
-
+RELAY_PORT = "25"
 
 LISTEN_ADDR = "127.0.0.1"
 LISTEN_PORT = "25"
@@ -14,9 +12,9 @@ HOSTNAME = socket.gethostname()
 USER_LIST = dict()
 
 
-def load():
-    parse_users()
-    conf = open(__MAIL_CONF, "r")
+def load(mail_conf, user_conf):
+    parse_users(user_conf)
+    conf = open(mail_conf, "r")
 
     for line in conf:
         if line.strip() == str():
@@ -32,8 +30,8 @@ def load():
     conf.close()
 
 
-def parse_users():
-    users = open(__USER_CONF, "r")
+def parse_users(user_conf):
+    users = open(user_conf, "r")
 
     for line in users:
         split = line.split(":")

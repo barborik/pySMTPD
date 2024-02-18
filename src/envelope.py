@@ -6,6 +6,7 @@ from relay import relay_queue
 
 
 class Envelope:
+
     def process(self):
         relay = False
 
@@ -19,16 +20,8 @@ class Envelope:
             else:
                 hostname = config.HOSTNAME
 
-            # parse port
-            split = hostname.split(":")
-            if len(split) > 1:
-                hostname = split[0]
-                port = split[1]
-            else:
-                port = 25
-
-            # verify if mail is meant for the local machine
-            if hostname == config.HOSTNAME and port == config.LISTEN_PORT:
+            # check if the mail is meant for the local machine
+            if hostname == config.HOSTNAME:
                 if user in config.USER_LIST:
                     log.inbound_received(user)
                     self.store(user)

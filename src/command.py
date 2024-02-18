@@ -6,6 +6,9 @@ from envelope import Envelope
 from server import client_pool
 
 
+email_regex = r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+
+
 def helo(client):
     client.hostname = client.buffer.split(" ")[1].strip()
     client.buffer = str()
@@ -24,9 +27,19 @@ def mail(client):
         return
 
     reverse_path = str()
-    if "<>" not in client.buffer:
+    if "<" in client.buffer and ">" in client.buffer:
         reverse_path = client.buffer.split("<")[1].split(">")[0]
-    client.buffer = str()
+        client.buffer = str()
+    elif "<>" in client.buffer:
+        reverse_path = str()
+    else:
+        reply.syntax_error(client)
+        client.buffer = str()
+        return
+
+    if not re.match(email_regex, reverse_path):
+        reply.syntax_error(client)
+        return
 
     client.envelope = Envelope()
     client.envelope.reverse_path = reverse_path
@@ -39,9 +52,19 @@ def rcpt(client):
         reply.sequence_fail(client)
         return
 
-    forward_path = client.buffer.split("<")[1].split(">")[0]
+    if "<>" not in client.buffer and "<" in client.buffer and ">" in client.buffer:
+        forward_path = client.buffer.split("<")[1].split(">")[0]
+        client.buffer = str()
+    else:
+        reply.syntax_error(client)
+        client.buffer = str()
+        return
+
+    if not re.match(email_regex, forward_path):
+        reply.syntax_error(client)
+        return
+
     client.envelope.forward_path.append(forward_path)
-    client.buffer = str()
 
     reply.action_success(client)
 

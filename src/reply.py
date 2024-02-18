@@ -44,3 +44,7 @@ def invalid_command(client):
 
 def start_input(client):
     client.send("354 Start mail input; end with <CRLF>.<CRLF>\r\n")
+
+
+def syntax_error(client):
+    client.send("501 Syntax error\r\n")
