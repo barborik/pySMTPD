@@ -59,7 +59,7 @@ Since the software is not available in any package repo, to run pySMTPD as a dae
 Make /etc your working directory.  
 ```$ cd /etc```  
 Clone the repository.  
-```$ git clone git@github.com:barborik/pySMTPD.git```
+```$ git clone https://github.com/barborik/pySMTPD.git```
 
 2. **Configuration**  
 Change the contents of the ```/etc/pySMTPD/conf/mail.conf``` and ```/etc/pySMTPD/conf/user.conf``` files to your liking.
