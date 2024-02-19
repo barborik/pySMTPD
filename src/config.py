@@ -13,6 +13,10 @@ USER_LIST = dict()
 
 
 def load(mail_conf, user_conf):
+    """
+    Loads the configuration files.
+    """
+
     parse_users(user_conf)
     conf = open(mail_conf, "r")
 
@@ -31,6 +35,10 @@ def load(mail_conf, user_conf):
 
 
 def parse_users(user_conf):
+    """
+    Parses and loads the user.conf file into a dictionary.
+    """
+
     users = open(user_conf, "r")
 
     for line in users:

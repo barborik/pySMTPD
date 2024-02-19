@@ -9,6 +9,49 @@ from server import client_pool
 email_regex = r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
 
 
+def exec_command(client):
+    """
+    Identifies the command and passes it to the relevant function.
+    """
+
+    if client.state == State.DATA:
+        client.recv_data()
+        return
+    else:
+        log.command_issued(client)
+
+    if re.match(r"^HELO \S+[\r\n]$", client.buffer):
+        helo(client)
+        return
+
+    if re.match(r"^MAIL FROM:<(\S|)+>[\r\n]$", client.buffer):
+        mail(client)
+        return
+
+    if re.match(r"^RCPT TO:<\S+>[\r\n]$", client.buffer):
+        rcpt(client)
+        return
+
+    if re.match(r"^DATA[\r\n]$", client.buffer):
+        data(client)
+        return
+
+    if re.match(r"^RSET[\r\n]$", client.buffer):
+        rset(client)
+        return
+
+    if re.match(r"^NOOP[\r\n]$", client.buffer):
+        noop(client)
+        return
+
+    if re.match(r"^QUIT[\r\n]$", client.buffer):
+        quit(client, client_pool)
+        return
+
+    reply.invalid_command(client)
+    client.buffer = str()
+
+
 def helo(client):
     client.hostname = client.buffer.split(" ")[1].strip()
     client.buffer = str()
@@ -99,42 +142,3 @@ def quit(client, client_pool):
     log.terminated(client)
     reply.service_terminate(client)
     client_pool.remove(client)
-
-
-def exec_command(client):
-    if client.state == State.DATA:
-        client.recv_data()
-        return
-    else:
-        log.command_issued(client)
-
-    if re.match(r"^HELO \S+[\r\n]$", client.buffer):
-        helo(client)
-        return
-
-    if re.match(r"^MAIL FROM:<(\S|)+>[\r\n]$", client.buffer):
-        mail(client)
-        return
-
-    if re.match(r"^RCPT TO:<\S+>[\r\n]$", client.buffer):
-        rcpt(client)
-        return
-
-    if re.match(r"^DATA[\r\n]$", client.buffer):
-        data(client)
-        return
-
-    if re.match(r"^RSET[\r\n]$", client.buffer):
-        rset(client)
-        return
-
-    if re.match(r"^NOOP[\r\n]$", client.buffer):
-        noop(client)
-        return
-
-    if re.match(r"^QUIT[\r\n]$", client.buffer):
-        quit(client, client_pool)
-        return
-
-    reply.invalid_command(client)
-    client.buffer = str()

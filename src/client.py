@@ -15,7 +15,12 @@ class SocketDisconnectException(Exception):
 
 
 class Client:
+
     def recv_char(self):
+        """
+        Receives one ascii character from the socket stream.
+        """
+
         data = self.socket.recv(1)
 
         if not data:
@@ -26,6 +31,10 @@ class Client:
         return char
 
     def recv_data(self):
+        """
+        Helper function to handle the DATA command.
+        """
+
         # transfer done
         if self.buffer.strip() == ".":
             self.state = State.IDENTIFIED
@@ -43,6 +52,10 @@ class Client:
         self.buffer = str()
 
     def send(self, string):
+        """
+        Sends an ascii encoded string at once.
+        """
+
         data = string.encode("ascii")
         self.socket.send(data)
 
@@ -61,6 +74,10 @@ class Client:
 
 
 def accept():
+    """
+    Accepts new connections and adds them to the connection pool.
+    """
+
     try:
         connection = server_socket.accept()
     except BlockingIOError:
@@ -83,6 +100,10 @@ def accept():
 
 
 def receive():
+    """
+    Wrapper for client.recv_char() to handle blocking I/O, disconnects and command execution.
+    """
+
     for client in client_pool.copy():
 
         # time out client

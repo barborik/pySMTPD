@@ -24,13 +24,18 @@ def check_reply(reply):
 
 
 def relay():
+    """
+    Relay email in the relay queue indefinitely on a second thread.
+    Unlike receiving email, sending is done one at a time.
+    """
+
     while True:
         if not relay_queue:
             continue
 
         envelope = relay_queue.popleft()
         address = envelope.forward_path[0].split("@")[1]
-            
+
         if "[" in address:
             mx = address.replace("[", "").replace("]", "")
         else:
@@ -48,7 +53,8 @@ def relay():
             relay_socket.close()
             continue
 
-        relay_socket.send(f"MAIL FROM:<{envelope.reverse_path}>\r\n".encode("ascii"))
+        relay_socket.send(
+            f"MAIL FROM:<{envelope.reverse_path}>\r\n".encode("ascii"))
         if not check_reply(relay_socket.recv(512).decode("ascii")):
             relay_socket.close()
             continue

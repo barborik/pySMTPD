@@ -8,6 +8,10 @@ from relay import relay_queue
 class Envelope:
 
     def process(self):
+        """
+        Processes incoming email, either relaying it further or storing it on the local machine.
+        """
+        
         relay = False
 
         for mailbox in self.forward_path.copy():
@@ -38,6 +42,10 @@ class Envelope:
             relay_queue.append(self)
 
     def store(self, user):
+        """
+        Stores the contents of the envelope.
+        """
+        
         filename = sha256(self.data.encode("ascii")).hexdigest()
         file = open(config.USER_LIST[user] + filename, "w")
         file.write(self.data)
