@@ -80,3 +80,6 @@ def relay():
             log.outbound_success(mx)
         else:
             log.outbound_fail(mx, reply)
+        
+        # QUIT command
+        relay_socket.send("QUIT\r\n".encode("ascii"))
