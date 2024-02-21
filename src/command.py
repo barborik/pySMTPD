@@ -69,18 +69,18 @@ def mail(client):
         reply.sequence_fail(client)
         return
 
-    reverse_path = str()
-    if "<" in client.buffer and ">" in client.buffer:
+    if "<>" in client.buffer:
+        reverse_path = str()
+    elif "<" in client.buffer and ">" in client.buffer:
         reverse_path = client.buffer.split("<")[1].split(">")[0]
         client.buffer = str()
-    elif "<>" in client.buffer:
-        reverse_path = str()
     else:
         reply.syntax_error(client)
         client.buffer = str()
         return
-
-    if not re.match(email_regex, reverse_path):
+    
+    tmp = reverse_path.replace("[", "").replace("]", "")
+    if not re.match(email_regex, tmp):
         reply.syntax_error(client)
         return
 
@@ -102,8 +102,9 @@ def rcpt(client):
         reply.syntax_error(client)
         client.buffer = str()
         return
-
-    if not re.match(email_regex, forward_path):
+    
+    tmp = forward_path.replace("[", "").replace("]", "")
+    if not re.match(email_regex, tmp):
         reply.syntax_error(client)
         return
 

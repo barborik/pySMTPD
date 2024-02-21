@@ -35,34 +35,39 @@ def relay():
 
         envelope = relay_queue.popleft()
         address = envelope.forward_path[0].split("@")[1]
-
+        
+        # determine if the host is known by a hostname or a numerical address
         if "[" in address:
             mx = address.replace("[", "").replace("]", "")
         else:
             mx = lookup_mx()
 
         log.sending(f"{mx}:{config.RELAY_PORT}")
-
+        
+        # connect
         relay_socket.connect((mx, config.RELAY_PORT))
         if not check_reply(relay_socket.recv(512).decode("ascii")):
             relay_socket.close()
             continue
-
+        
+        # HELO command
         relay_socket.send(f"HELO {config.HOSTNAME}\r\n".encode("ascii"))
         if not check_reply(relay_socket.recv(512).decode("ascii")):
             relay_socket.close()
             continue
-
-        relay_socket.send(
-            f"MAIL FROM:<{envelope.reverse_path}>\r\n".encode("ascii"))
+        
+        # MAIL command
+        relay_socket.send(f"MAIL FROM:<{envelope.reverse_path}>\r\n".encode("ascii"))
         if not check_reply(relay_socket.recv(512).decode("ascii")):
             relay_socket.close()
             continue
-
+        
+        # RCPT command
         for mailbox in envelope.forward_path:
             relay_socket.send(f"RCPT TO:<{mailbox}>\r\n".encode("ascii"))
             relay_socket.recv(512)
-
+            
+        # DATA command
         relay_socket.send(f"DATA\r\n".encode("ascii"))
         if not check_reply(relay_socket.recv(512).decode("ascii")):
             relay_socket.close()
