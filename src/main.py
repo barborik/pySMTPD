@@ -29,8 +29,8 @@ def main():
     relay_thread.start()
 
     while True:
-        client.accept()
-        client.receive()
+        server.accept()
+        server.receive()
 
 
 if __name__ == "__main__":

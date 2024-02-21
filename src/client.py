@@ -1,13 +1,8 @@
 from time import time
 
-import log
 import reply
-import server
 import config
-import command
 from state import State
-from server import server_socket
-from server import client_pool
 
 
 class SocketDisconnectException(Exception):
@@ -15,10 +10,13 @@ class SocketDisconnectException(Exception):
 
 
 class Client:
+    """
+    Class representing a connected client.
+    """
 
     def recv_char(self):
         """
-        Receives one ascii character from the socket stream.
+        Receives one ASCII character from the socket stream.
         """
 
         data = self.socket.recv(1)
@@ -53,77 +51,25 @@ class Client:
 
     def send(self, string):
         """
-        Sends an ascii encoded string at once.
+        Sends an ASCII encoded string at once.
         """
 
         data = string.encode("ascii")
         self.socket.send(data)
 
     def reset_timeout(self):
+        """
+        Moves the timeout time by a configuration defined increment.
+        """
+
         self.timeout = time() + int(config.CLIENT_TIMEOUT)
 
-    def __init__(self, sock, addr, port):
-        self.socket = sock
-        self.address = addr
+    def __init__(self, socket, address, port):
+        self.socket = socket
+        self.address = address
         self.port = port
         self.buffer = str()
         self.state = State.UNIDENTIFIED
         self.timeout = time() + int(config.CLIENT_TIMEOUT)
         self.hostname = None
         self.envelope = None
-
-
-def accept():
-    """
-    Accepts new connections and adds them to the connection pool.
-    """
-
-    try:
-        connection = server_socket.accept()
-    except BlockingIOError:
-        return
-
-    sock = connection[0]
-    addr = connection[1][0]
-    port = connection[1][1]
-
-    sock.setblocking(False)
-    client = Client(sock, addr, port)
-
-    if len(client_pool) == int(config.MAX_CLIENTS):
-        reply.service_busy(client)
-        return
-
-    client_pool.append(client)
-    reply.service_ready(client)
-    log.accepted(client)
-
-
-def receive():
-    """
-    Wrapper for client.recv_char() to handle blocking I/O, disconnects and command execution.
-    """
-
-    for client in client_pool.copy():
-
-        # time out client
-        if time() > client.timeout:
-            log.timeout(client)
-            client_pool.remove(client)
-
-        # fetch an ascii character from the data stream
-        try:
-            char = client.recv_char()
-        except BlockingIOError:
-            continue
-        except UnicodeDecodeError:
-            continue
-        except SocketDisconnectException:
-            log.terminated(client)
-            client_pool.remove(client)
-            continue
-
-        # command issued
-        if char == "\n":
-            client.reset_timeout()
-            command.exec_command(client)

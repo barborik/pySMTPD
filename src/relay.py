@@ -6,15 +6,30 @@ import log
 import config
 
 relay_queue = deque()
+"""
+Queue of envelopes for relaying.
+"""
+
 relay_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+"""
+Socket connecting to remote MTA's relaying email to them.
+"""
 
 
 def lookup_mx(domain):
+    """
+    Performs a DNS lookup for an MX record.
+    """
+    
     record = dns.resolver.resolve(domain, "MX")[0].to_text()
     return record.split(" ")[1]
 
 
 def check_reply(reply):
+    """
+    Checks reply for its reply code, positive returns true, negative false.
+    """
+    
     code = reply.split(" ")[0]
 
     if code[0] == "2" or code[0] == "3":

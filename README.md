@@ -1,6 +1,8 @@
 # pySMTPD
 pySMTPD is an [RFC 788](https://datatracker.ietf.org/doc/html/rfc788) compatible SMTP daemon written in Python implementing the [minimum implementation](https://www.rfc-editor.org/rfc/rfc788.html#page-35) as described by the standard.
 
+This document serves as a user's manual, for technical reference see the [wiki](https://github.com/barborik/pySMTPD/wiki).
+
 ### Standard Compliance
 As is the norm with RFC compliant software being non-compliant in one way or another, pySMTPD isn't any different.
 

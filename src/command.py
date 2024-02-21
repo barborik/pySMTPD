@@ -3,7 +3,6 @@ import reply
 import re
 from state import State
 from envelope import Envelope
-from server import client_pool
 
 
 email_regex = r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
@@ -45,7 +44,7 @@ def exec_command(client):
         return
 
     if re.match(r"^QUIT[\r\n]$", client.buffer):
-        quit(client, client_pool)
+        quit(client)
         return
 
     reply.invalid_command(client)
@@ -78,7 +77,7 @@ def mail(client):
         reply.syntax_error(client)
         client.buffer = str()
         return
-    
+
     tmp = reverse_path.replace("[", "").replace("]", "")
     if not re.match(email_regex, tmp):
         reply.syntax_error(client)
@@ -102,7 +101,7 @@ def rcpt(client):
         reply.syntax_error(client)
         client.buffer = str()
         return
-    
+
     tmp = forward_path.replace("[", "").replace("]", "")
     if not re.match(email_regex, tmp):
         reply.syntax_error(client)
@@ -139,7 +138,7 @@ def noop(client):
     reply.action_success(client)
 
 
-def quit(client, client_pool):
+def quit(client):
     log.terminated(client)
     reply.service_terminate(client)
-    client_pool.remove(client)
+    client.socket.close()

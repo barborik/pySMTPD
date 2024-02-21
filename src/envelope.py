@@ -6,6 +6,9 @@ from relay import relay_queue
 
 
 class Envelope:
+    """
+    Class representing an envelope in the process of inbound/outbound transmission.
+    """
 
     def process(self):
         """
@@ -43,7 +46,7 @@ class Envelope:
 
     def store(self, user):
         """
-        Stores the contents of the envelope.
+        Stores the contents of the envelope to the user's mailbox.
         """
         
         filename = sha256(self.data.encode("ascii")).hexdigest()
