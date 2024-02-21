@@ -45,7 +45,7 @@ def relay():
         log.sending(f"{mx}:{config.RELAY_PORT}")
         
         # connect
-        relay_socket.connect((mx, config.RELAY_PORT))
+        relay_socket.connect((mx, int(config.RELAY_PORT)))
         if not check_reply(relay_socket.recv(512).decode("ascii")):
             relay_socket.close()
             continue
