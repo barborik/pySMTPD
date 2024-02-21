@@ -34,13 +34,13 @@ def relay():
             continue
 
         envelope = relay_queue.popleft()
-        address = envelope.forward_path[0].split("@")[1]
+        hostname = envelope.forward_path[0].split("@")[1]
         
         # determine if the host is known by a hostname or a numerical address
-        if "[" in address:
-            mx = address.replace("[", "").replace("]", "")
+        if "[" in hostname:
+            mx = hostname.replace("[", "").replace("]", "")
         else:
-            mx = lookup_mx()
+            mx = lookup_mx(hostname)
 
         log.sending(f"{mx}:{config.RELAY_PORT}")
         
