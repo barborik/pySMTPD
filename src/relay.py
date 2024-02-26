@@ -16,20 +16,21 @@ Socket connecting to remote MTA's relaying email to them.
 """
 
 
-def lookup_mx(domain):
+def lookup_mx(domain: str) -> str:
     """
     Performs a DNS lookup for an MX record.
+    Returns just the hostname part of the record.
     """
-    
+
     record = dns.resolver.resolve(domain, "MX")[0].to_text()
     return record.split(" ")[1]
 
 
-def check_reply(reply):
+def check_reply(reply: str) -> bool:
     """
     Checks reply for its reply code, positive returns true, negative false.
     """
-    
+
     code = reply.split(" ")[0]
 
     if code[0] == "2" or code[0] == "3":
@@ -38,7 +39,7 @@ def check_reply(reply):
     return False
 
 
-def relay():
+def relay() -> None:
     """
     Relay email in the relay queue indefinitely on a second thread.
     Unlike receiving email, sending is done one at a time.
@@ -50,7 +51,7 @@ def relay():
 
         envelope = relay_queue.popleft()
         hostname = envelope.forward_path[0].split("@")[1]
-        
+
         # determine if the host is known by a hostname or a numerical address
         if "[" in hostname:
             mx = hostname.replace("[", "").replace("]", "")
@@ -58,30 +59,31 @@ def relay():
             mx = lookup_mx(hostname)
 
         log.sending(f"{mx}:{config.RELAY_PORT}")
-        
+
         # connect
         relay_socket.connect((mx, int(config.RELAY_PORT)))
         if not check_reply(relay_socket.recv(512).decode("ascii")):
             relay_socket.close()
             continue
-        
+
         # HELO command
         relay_socket.send(f"HELO {config.HOSTNAME}\r\n".encode("ascii"))
         if not check_reply(relay_socket.recv(512).decode("ascii")):
             relay_socket.close()
             continue
-        
+
         # MAIL command
-        relay_socket.send(f"MAIL FROM:<{envelope.reverse_path}>\r\n".encode("ascii"))
+        relay_socket.send(
+            f"MAIL FROM:<{envelope.reverse_path}>\r\n".encode("ascii"))
         if not check_reply(relay_socket.recv(512).decode("ascii")):
             relay_socket.close()
             continue
-        
+
         # RCPT command
         for mailbox in envelope.forward_path:
             relay_socket.send(f"RCPT TO:<{mailbox}>\r\n".encode("ascii"))
             relay_socket.recv(512)
-            
+
         # DATA command
         relay_socket.send(f"DATA\r\n".encode("ascii"))
         if not check_reply(relay_socket.recv(512).decode("ascii")):
@@ -95,6 +97,6 @@ def relay():
             log.outbound_success(mx)
         else:
             log.outbound_fail(mx, reply)
-        
+
         # QUIT command
         relay_socket.send("QUIT\r\n".encode("ascii"))

@@ -10,6 +10,12 @@ from relay import relay
 
 
 def main():
+    """
+    Entry point, takes in 2 positional arguments:
+    1. filepath of the main configuration file (mail.conf)
+    2. filepath of the virtual user listing file (user.conf)
+    """
+
     try:
         if sys.argv[1] == "-h" or sys.argv[1] == "--help":
             print(f"Usage: {sys.argv[0]} [flags] <config path> <user path>")

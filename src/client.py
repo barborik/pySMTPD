@@ -1,3 +1,4 @@
+import socket
 from time import time
 
 import reply
@@ -14,7 +15,7 @@ class Client:
     Class representing a connected client.
     """
 
-    def recv_char(self):
+    def recv_char(self) -> str:
         """
         Receives one ASCII character from the socket stream.
         """
@@ -28,7 +29,7 @@ class Client:
         self.buffer += char
         return char
 
-    def recv_data(self):
+    def recv_data(self) -> None:
         """
         Helper function to handle the DATA command.
         """
@@ -49,7 +50,7 @@ class Client:
         self.envelope.data += self.buffer.strip() + "\n"
         self.buffer = str()
 
-    def send(self, string):
+    def send(self, string: str) -> None:
         """
         Sends an ASCII encoded string at once.
         """
@@ -57,14 +58,14 @@ class Client:
         data = string.encode("ascii")
         self.socket.send(data)
 
-    def reset_timeout(self):
+    def reset_timeout(self) -> None:
         """
         Moves the timeout time by a configuration defined increment.
         """
 
         self.timeout = time() + int(config.CLIENT_TIMEOUT)
 
-    def __init__(self, socket, address, port):
+    def __init__(self, socket: socket, address: str, port: int):
         self.socket = socket
         self.address = address
         self.port = port

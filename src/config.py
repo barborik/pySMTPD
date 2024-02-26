@@ -12,9 +12,9 @@ HOSTNAME = socket.gethostname()
 USER_LIST = dict()
 
 
-def load(mail_conf, user_conf):
+def load(mail_conf: str, user_conf: str) -> None:
     """
-    Loads the configuration files.
+    Loads the configuration files, which are passed as filepaths.
     """
 
     parse_users(user_conf)
@@ -34,9 +34,10 @@ def load(mail_conf, user_conf):
     conf.close()
 
 
-def parse_users(user_conf):
+def parse_users(user_conf: str) -> None:
     """
     Parses and loads the user.conf file into a dictionary.
+    The argument passed is just a filepath.
     """
 
     users = open(user_conf, "r")

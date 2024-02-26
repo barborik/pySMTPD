@@ -20,7 +20,7 @@ List of connected clients, the server receives at most one byte from each every 
 """
 
 
-def init():
+def init() -> None:
     """
     Initializes the server socket.
     """
@@ -31,7 +31,7 @@ def init():
     log.listening()
 
 
-def accept():
+def accept() -> None:
     """
     Accepts new connections and adds them to the connection pool.
     """
@@ -57,7 +57,7 @@ def accept():
     log.accepted(client)
 
 
-def receive():
+def receive() -> None:
     """
     Wrapper for client.recv_char() to handle blocking I/O, disconnects and command execution for every client in the connection pool.
     """

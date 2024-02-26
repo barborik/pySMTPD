@@ -2,13 +2,14 @@ import log
 import reply
 import re
 from state import State
+from client import Client
 from envelope import Envelope
 
 
 email_regex = r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
 
 
-def exec_command(client):
+def exec_command(client: Client):
     """
     Identifies the command and passes it to the relevant function.
     """
@@ -51,7 +52,11 @@ def exec_command(client):
     client.buffer = str()
 
 
-def helo(client):
+def helo(client: Client):
+    """
+    Identifies the client by a hostname.
+    """
+
     client.hostname = client.buffer.split(" ")[1].strip()
     client.buffer = str()
 
@@ -63,7 +68,11 @@ def helo(client):
     reply.action_success(client)
 
 
-def mail(client):
+def mail(client: Client):
+    """
+    Initializes a new Envelope and sets its reverse path.
+    """
+
     if client.state != State.IDENTIFIED or client.envelope:
         reply.sequence_fail(client)
         return
@@ -89,7 +98,11 @@ def mail(client):
     reply.action_success(client)
 
 
-def rcpt(client):
+def rcpt(client: Client):
+    """
+    Adds recipients to the forward path list in the current Envelope objects assigned to a client.
+    """
+
     if client.envelope.reverse_path is None:
         reply.sequence_fail(client)
         return
@@ -112,7 +125,11 @@ def rcpt(client):
     reply.action_success(client)
 
 
-def data(client):
+def data(client: Client):
+    """
+    Parses the content of the Envelope, checks for leading dots.
+    """
+
     if len(client.envelope.forward_path) == 0:
         reply.sequence_fail(client)
         return
@@ -122,7 +139,11 @@ def data(client):
     reply.start_input(client)
 
 
-def rset(client):
+def rset(client: Client):
+    """
+    Resets the transfer process, nulls out the Envelope.
+    """
+
     client.buffer = str()
 
     if client.state == State.UNIDENTIFIED:
@@ -134,11 +155,19 @@ def rset(client):
     reply.action_success(client)
 
 
-def noop(client):
+def noop(client: Client):
+    """
+    NO-OPeration, does nothing.
+    """
+
     reply.action_success(client)
 
 
-def quit(client):
+def quit(client: Client):
+    """
+    Terminates the connection to the client.
+    """
+
     log.terminated(client)
     reply.service_terminate(client)
     client.socket.close()

@@ -10,11 +10,11 @@ class Envelope:
     Class representing an envelope in the process of inbound/outbound transmission.
     """
 
-    def process(self):
+    def process(self) -> None:
         """
         Processes incoming email, either relaying it further or storing it on the local machine.
         """
-        
+
         relay = False
 
         for mailbox in self.forward_path.copy():
@@ -44,11 +44,11 @@ class Envelope:
             log.outbound_received(mailbox)
             relay_queue.append(self)
 
-    def store(self, user):
+    def store(self, user: str) -> None:
         """
         Stores the contents of the envelope to the user's mailbox.
         """
-        
+
         filename = sha256(self.data.encode("ascii")).hexdigest()
         file = open(config.USER_LIST[user] + filename, "w")
         file.write(self.data)

@@ -1,4 +1,5 @@
 import config
+from client import Client
 
 """
 
@@ -18,33 +19,33 @@ x5z - Mail system
 """
 
 
-def service_ready(client):
+def service_ready(client: Client) -> None:
     client.send(f"220 {config.HOSTNAME} pySMTPD ready\r\n")
 
 
-def service_busy(client):
+def service_busy(client: Client) -> None:
     client.send(f"421 {config.HOSTNAME} pySMTPD busy, try again later\r\n")
 
 
-def service_terminate(client):
+def service_terminate(client: Client) -> None:
     client.send("221 Bye\r\n")
 
 
-def action_success(client):
+def action_success(client: Client) -> None:
     client.send("250 Action success\r\n")
 
 
-def sequence_fail(client):
+def sequence_fail(client: Client) -> None:
     client.send("503 Bad sequence of commands\r\n")
 
 
-def invalid_command(client):
+def invalid_command(client: Client) -> None:
     client.send("500 Invalid command\r\n")
 
 
-def start_input(client):
+def start_input(client: Client) -> None:
     client.send("354 Start mail input; end with <CRLF>.<CRLF>\r\n")
 
 
-def syntax_error(client):
+def syntax_error(client: Client) -> None:
     client.send("501 Syntax error\r\n")
